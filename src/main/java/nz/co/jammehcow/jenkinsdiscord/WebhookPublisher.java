@@ -26,7 +26,7 @@ import org.kohsuke.stapler.QueryParameter;
 public class WebhookPublisher extends Notifier {
     private final String webhookURL;
     private static final String NAME = "Discord Notifier";
-    private static final String VERSION = "1.0.0";
+    private static final String VERSION = "1.0.0-andy-hack";
 
     @DataBoundConstructor
     public WebhookPublisher(String webhookURL) { this.webhookURL = webhookURL; }
@@ -53,16 +53,22 @@ public class WebhookPublisher extends Notifier {
         DiscordWebhook wh = new DiscordWebhook(this.webhookURL);
         wh.setTitle(build.getProject().getDisplayName() + " #" + build.getId());
 
-        String descriptionPrefix = "**Build:**  #" + build.getId() + "\n**Status:**  " + (build.getResult().toString().toLowerCase());
+        String url = globalConfig.getUrl() + build.getUrl();
+        String descriptionPrefix = "**Build:** [#"
+                + build.getId()
+                + "]("
+                + url
+                + ")\n**Status:** ["
+                + build.getResult().toString().toLowerCase()
+                + "]("
+                + url
+                + ")";
 
         wh.setDescription(new EmbedDescription(build, globalConfig, descriptionPrefix).toString());
         wh.setStatus(buildStatus);
-        wh.setURL(globalConfig.getUrl() + build.getUrl());
-        wh.setFooter("Jenkins v" + build.getHudsonVersion() + ", " + getDescriptor().getDisplayName() + " v" + getDescriptor().getVersion());
 
         try { wh.send(); }
         catch (WebhookException e) { e.printStackTrace(); }
-
         return true;
     }
 
